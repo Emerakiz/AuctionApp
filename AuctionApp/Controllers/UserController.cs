@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AuctionApp.Core.Interfaces;
+using AuctionApp.Data.DTO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuctionApp.Controllers
@@ -7,12 +9,25 @@ namespace AuctionApp.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
 
         // GET: api/User
         [HttpGet]
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            return Ok("This is the UserController");
+            var result = await _userService.GetUsersAsync();
+
+            if (result == null)
+            {
+                return NotFound("No users found.");
+            }
+
+            return Ok(result);
         }
 
         // GET: api/User/5
@@ -20,22 +35,48 @@ namespace AuctionApp.Controllers
         [Route("{id:int}")]
         public IActionResult GetUserById(int id)
         {
-            return Ok($"Get user with ID: {id}");
+            var result = _userService.GetUserByIdAsync(id);
+
+            if (result == null)
+            {
+                return NotFound("No user found");
+            }
+
+            return Ok(result);
         }
 
         // POST: api/User/register
         [HttpPost("register")]
-        public IActionResult CreateUser()
+        public async Task<IActionResult> CreateUser(string username, string password)
         {
-            return Ok("Create a new user");
+            try
+            {
+                var result = await _userService.RegisterUserAsync(username, password);
+
+                return Ok(result);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // api/User/login
         [HttpPost("login")]
-        public IActionResult LoginUser()
+        public async Task<IActionResult> LoginUser(LoginUserDTO dto)
         {
-            return Ok("Login user");
-        }
+            try
+            {
+                var token = await _userService.LoginUserAsync(dto.Username, dto.Password);
 
+                return Created("", new TokenResponseDto { Token = token });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+        
     }
 }

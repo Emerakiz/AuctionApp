@@ -1,4 +1,3 @@
-
 using AuctionApp.Core.Interfaces;
 using AuctionApp.Core.Services;
 using AuctionApp.Data;
@@ -43,7 +42,7 @@ namespace AuctionApp
             builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
             builder.Services.AddScoped<IBidRepo, BidRepo>();
             builder.Services.AddScoped<IBidService, BidService>();
-           // builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<IUserRepo, UserRepo>();
 
             var app = builder.Build();
 
@@ -59,6 +58,10 @@ namespace AuctionApp
 
             app.UseAuthorization();
             app.MapControllers();
+
+            
+
+            
 
             app.Run();
         }

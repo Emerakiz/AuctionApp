@@ -55,6 +55,7 @@ namespace AuctionApp.Core.Services
             var query = _repo.QueryAuctions();
             var now = DateTime.UtcNow;
 
+            // Status filter
             switch (status?.ToLower())
             {
                 case "active":
@@ -73,6 +74,20 @@ namespace AuctionApp.Core.Services
                 default:
                     throw new ArgumentException("Invalid status value");
             }
+
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+
+                query = query.Where(a =>
+                    a.Title.ToLower().Contains(term));
+            }
+
+            // Sort filter - default is by end date ascending, closed auctions sort last
+            query = query
+                .OrderBy(a => a.EndDate < now)
+                .ThenBy(a => a.EndDate);
 
             // AutoMapper projection to DTO
             var dtos = await query

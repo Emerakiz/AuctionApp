@@ -16,9 +16,11 @@ namespace AuctionApp.Controllers
             _bidService = bidService;
         }
 
-        // POST: api/Bid
-        [HttpPost]
-        public async Task<IActionResult> PlaceBid([FromBody] PlaceBidDTO dto, int auctionId)
+        // POST: api/Bid/auction/5
+        [HttpPost("auction/{auctionId:int}")]
+        public async Task<IActionResult> PlaceBid(
+            [FromBody] PlaceBidDTO dto, 
+            [FromRoute] int auctionId)
         {
             try
             {
@@ -32,5 +34,28 @@ namespace AuctionApp.Controllers
             }
         }
 
+        // DELETE: api/Bid/5
+        [HttpDelete("{bidId:int}")]
+        public async Task<IActionResult> DeleteBid(int bidId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var result = await _bidService.DeleteBidAsync(bidId, userId);
+                if (result)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
 }

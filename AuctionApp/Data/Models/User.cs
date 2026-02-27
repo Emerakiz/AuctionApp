@@ -8,6 +8,8 @@
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
 
+        public bool IsAdmin { get; set; } = false;
+
         public List<Auction> Auctions { get; set; } = new();
         public List<Bid> Bids { get; set; } = new();
 

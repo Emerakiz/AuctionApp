@@ -6,7 +6,9 @@ namespace AuctionApp.Data.Interfaces
     {
         public Task<List<User>> GetAllUsersAsync();
         public Task<User?> GetUserByIdAsync(int id);
-        public void AddUserAsync(User user);
+        public Task AddUserAsync(User user);
+
+        void DeleteUser(User user);
         Task SaveChanges();
     }
 }

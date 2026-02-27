@@ -23,7 +23,32 @@ namespace AuctionApp.Core.Services
         // Deletes a bid if the user is the owner of the bid and the auction is still active and the bid is the latest bid on the auction.
         public Task<bool> DeleteBidAsync(int bidId, int userId)
         {
-            throw new NotImplementedException();
+            var bid = _bidRepo.QueryBids()
+                .Include(b => b.Auction)
+                .FirstOrDefault(b => b.BidId == bidId);
+
+            // Checks
+            if (bid == null)
+            {
+                throw new Exception("Bid not found.");
+            }
+            if(bid.UserId != userId)
+            {
+                throw new Exception("You can only delete your own bids.");
+            }
+            if (bid != HigestBidOnAuctionAsync(bidId, bid.AuctionId).Result)
+            {
+                throw new Exception("You can only delete the bid if its latest bid on the auction.");
+            }
+            if (bid.Auction.EndDate < DateTime.UtcNow)
+            {
+                throw new Exception("Auction is closed.");
+            }
+
+            _bidRepo.RemoveBidAsync(bid);
+            _bidRepo.SaveChangesAsync();
+
+            return Task.FromResult(true);
         }
 
         // Validates and places a bid on an auction.
@@ -71,6 +96,17 @@ namespace AuctionApp.Core.Services
             var result = _mapper.Map<BidListItemDTO>(bid);
             return result;
 
+        }
+
+        // Retrieves the highest bid for a specific auction.
+        public async Task<Bid> HigestBidOnAuctionAsync(int bidId, int auctionId)
+        {
+                var bid = await _bidRepo.QueryBids()
+                    .Where(b => b.BidId == bidId && b.AuctionId == auctionId)
+                    .OrderByDescending(b => b.Amount)
+                    .FirstOrDefaultAsync();
+    
+                return bid;
         }
     }
 }

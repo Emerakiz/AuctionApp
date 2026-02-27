@@ -44,5 +44,12 @@ namespace AuctionApp.Data.Repo
         {
             await _context.SaveChangesAsync();
         }
+
+        // Wipe all auctions from the database (for testing purposes)
+        public async Task ClearAllAsync()
+        {
+            _context.Auctions.RemoveRange(_context.Auctions);
+            await _context.SaveChangesAsync();
+        }
     }
 }

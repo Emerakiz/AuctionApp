@@ -1,28 +1,46 @@
 ﻿using AuctionApp.Data.Interfaces;
 using AuctionApp.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuctionApp.Data.Repo
 {
     public class BidRepo : IBidRepo
     {
-        public Task AddBidAsync(Bid bid)
+        private readonly AppDbContext _context;
+        public BidRepo(AppDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
+        }
+        public async Task AddBidAsync(Bid bid)
+        {
+            await _context.Bids.AddAsync(bid);
+            _context.SaveChanges();
         }
 
-        public Task<List<Bid>> GetBidsByAuctionIdAsync(int auctionId)
+        public async Task<Bid?> GetHigestBidByAuctionAsync(int bidId)
         {
-            throw new NotImplementedException();
+            var bid = await _context.Bids
+                .Where(b => b.BidId == bidId)
+                .OrderByDescending(b => b.Amount)
+                .FirstOrDefaultAsync();
+
+            return bid;
         }
 
-        public Task RemoveBidAsync(Bid bid)
+        public IQueryable<Bid> QueryBids()
         {
-            throw new NotImplementedException();
+            return _context.Bids.AsNoTracking();
         }
 
-        public Task SaveChangesAsync()
+        public void RemoveBidAsync(Bid bid)
         {
-            throw new NotImplementedException();
+            _context.Bids.Remove(bid);
+            _context.SaveChanges();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

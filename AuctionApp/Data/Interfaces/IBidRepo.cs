@@ -1,12 +1,14 @@
-﻿using AuctionApp.Data.Models;
+﻿using AuctionApp.Core.Services;
+using AuctionApp.Data.Models;
 
 namespace AuctionApp.Data.Interfaces
 {
     public interface IBidRepo
     {
-        public Task<List<Bid>> GetBidsByAuctionIdAsync(int auctionId);
+        public IQueryable<Bid> QueryBids();
+        public Task<Bid?> GetHigestBidByAuctionAsync(int bidId);
         public Task AddBidAsync(Bid bid);
-        public Task RemoveBidAsync(Bid bid);
+        public void RemoveBidAsync(Bid bid);
 
         Task SaveChangesAsync();
     }
