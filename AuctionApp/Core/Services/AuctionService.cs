@@ -1,9 +1,11 @@
 ﻿using AuctionApp.Core.Interfaces;
 using AuctionApp.Data.DTO;
 using AuctionApp.Data.Interfaces;
+using AuctionApp.Data.Models;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace AuctionApp.Core.Services
 {
@@ -16,9 +18,25 @@ namespace AuctionApp.Core.Services
             _repo = repo;
             _mapper = mapper;
         }
-        public Task<int> CreateAuctionAsync(CreateAuctionDTO dto)
+
+        // Create and post an Auction
+        public async Task<int> CreateAuctionAsync(CreateAuctionDTO dto, int userId)
         {
-            throw new NotImplementedException();
+
+            // Map DTO to auction entity
+            var auction = _mapper.Map<Auction>(dto);
+
+            // Set additional properties
+            auction.UserId = userId;
+            auction.StartDate = DateTime.UtcNow;
+            auction.EndDate = DateTime.UtcNow.AddDays(3);
+
+
+            await _repo.AddAsync(auction);
+            await _repo.SaveChanges();
+
+            return auction.AuctionId;
+
         }
 
         // Retrieves a single auction by its ID, including details.
@@ -75,9 +93,38 @@ namespace AuctionApp.Core.Services
             throw new NotImplementedException();
         }
 
-        public Task<bool> UpdateAuctionAsync(CreateAuctionDTO dto, int userId)
+        /// <summary>
+        /// Updates an existing auction with the provided data from the specified user.
+        /// </summary>
+        /// <param name="dto">The data transfer object containing updated auction information.</param>
+        /// <param name="userId">The ID of the user performing the update.</param>
+        /// <returns>True if the auction was updated successfully; otherwise, false.</returns>
+        public async Task<bool> UpdateAuctionAsync(CreateAuctionDTO dto, int userId, int auctionId)
         {
-            throw new NotImplementedException();
+            var auction = await _repo.QueryAuctions()
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+
+            if (auction == null)
+            {
+                return false;
+            }
+
+            // Cannot update if there is any bids on the auction
+            if (auction.CurrentPrice > dto.StartingPrice)
+            {
+                return false; 
+            }
+
+            // Uppdate auction properties based on DTO
+            auction.Title = dto.Title;
+            auction.Description = dto.Description;
+            auction.StartingPrice = dto.StartingPrice;
+
+
+            _repo.Update(auction);
+            await _repo.SaveChanges();
+
+            return true;
         }
     }
 }

@@ -41,6 +41,9 @@ namespace AuctionApp
             // Register repositories and services
             builder.Services.AddScoped<IAuctionService, AuctionService>();
             builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
+            builder.Services.AddScoped<IBidRepo, BidRepo>();
+            builder.Services.AddScoped<IBidService, BidService>();
+           // builder.Services.AddScoped<IUserRepo, UserRepo>();
 
             var app = builder.Build();
 

@@ -34,8 +34,6 @@ namespace AuctionApp.Controllers
             [FromQuery] string? status,
             [FromQuery] string? search)
         {
-            try
-            {
             if (!string.IsNullOrWhiteSpace(status))
             {
                 var s = status.Trim().ToLower();
@@ -43,20 +41,21 @@ namespace AuctionApp.Controllers
                 {
                     return BadRequest("status must be: active, closed, or all");
                 }
-
             }
 
             var result = await _auctionService.GetAuctionsAsync(status, search);
             return Ok(result);
-            }
-            catch (ArgumentException)
-            {
-                return BadRequest("status must be: active, closed, or all");
-            }
         }
 
+        /// <summary>
+        /// Retrieves the auction with the specified identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the auction to retrieve.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the auction data if found; otherwise, a NotFound result.</returns>
         // GET: api/Auction/5
         [HttpGet("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAuctionById(int id)
         {
             var auction = await _auctionService.GetAuctionByIdAsync(id);
@@ -68,13 +67,27 @@ namespace AuctionApp.Controllers
             return Ok(auction);
         }
 
+        /// <summary>
+        /// Retrieves the bid history for the specified auction.
+        /// </summary>
+        /// <param name="auctionId">The unique identifier of the auction for which to retrieve bid history.</param>
+        /// <returns>An <see cref="IActionResult"/> containing a collection of bid records for the specified auction. Returns an
+        /// empty collection if no bids have been placed.</returns>
         // GET: api/Auction/bidHistory?auctionId=5
         [HttpGet("bidHistory")]
-        public IActionResult GetBidHistory([FromQuery] int auctionId)
+        public async Task<IActionResult> GetBidHistory([FromQuery] int auctionId)
         {
-            return Ok($"You requested bid history for auction ID: {auctionId}");
+            var bidHistory = await _auctionService.GetBidHistoryAsync(auctionId);
+            return Ok(bidHistory);
+
         }
 
+        /// <summary>
+        /// Creates a new auction using the specified auction details.
+        /// </summary>
+        /// <param name="dto">An object containing the details of the auction to create. Must not be null.</param>
+        /// <returns>A response with status code 201 (Created) and a location header pointing to the newly created auction
+        /// resource.</returns>
         // POST: api/Auction
         [HttpPost]
         public async Task<IActionResult> CreateAuction([FromBody] CreateAuctionDTO dto)
@@ -83,16 +96,33 @@ namespace AuctionApp.Controllers
 
             var createdAuction = await _auctionService.CreateAuctionAsync(dto, userId);
 
-            return CreatedAtAction(nameof(GetAuctionById), new { id = createdAuction.AuctionId }, null);
+            return CreatedAtAction(nameof(GetAuctionById), new { id = createdAuction }, null);
 
         }
 
+
+        /// <summary>
+        /// Updates an existing auction with the specified identifier using the provided auction details.
+        /// </summary>
+        /// <param name="id">The unique identifier of the auction to update.</param>
+        /// <param name="dto">An object containing the updated auction details. Must not be null.</param>
+        /// <returns>An <see cref="IActionResult"/> indicating the result of the update operation. Returns <see
+        /// cref="OkObjectResult"/> with the update result if successful; otherwise, <see cref="NotFoundResult"/> if the
+        /// auction does not exist.</returns>
         // PUT: api/Auction/5
         [HttpPut("{id}")]
-        public IActionResult UpdateAuction(int id, [FromBody] object auctionData)
+        public async Task<IActionResult> UpdateAuction(int id, [FromBody] CreateAuctionDTO dto, int auctionId)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+            var result = await _auctionService.UpdateAuctionAsync(dto, userId, auctionId);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
 
         }
 
