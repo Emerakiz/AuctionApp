@@ -8,6 +8,7 @@ namespace AuctionApp.Data.Interfaces
         public Task<User> GetUserByIdAsync(int id);
         public Task <User?> GetByUserNameAsync(string username);
         public Task AddUserAsync(User user);
+        public void UpdateUser(User user);
 
         void DeleteUser(User user);
         Task SaveChanges();

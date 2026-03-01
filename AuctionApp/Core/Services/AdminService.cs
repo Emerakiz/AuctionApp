@@ -67,6 +67,36 @@ namespace AuctionApp.Core.Services
             return await Task.FromResult(true);
         }
 
-       
+        public async Task<bool> DisableAuctionAsync(int auctionId, int adminId)
+        {
+            var auction = await _auctionRepo.QueryAuctions()
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+
+            if (auction == null)
+            {
+                throw new ArgumentException("Auction not found");
+            }
+
+            auction.IsActive = false;
+            _auctionRepo.Update(auction);
+            await _auctionRepo.SaveChanges();
+            return true;
+        }
+
+        public async Task<bool> DisableUserAsync(int userId, int adminId)
+        {
+            var user = await _userRepo.GetUserByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new ArgumentException("User not found");
+            }
+
+            user.IsActive = false;
+            _userRepo.UpdateUser(user);
+            await _userRepo.SaveChanges();
+            return true;
+        }
+
     }
 }

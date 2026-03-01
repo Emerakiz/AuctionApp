@@ -39,6 +39,11 @@ namespace AuctionApp.Data.Repo
             return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
         }
 
+        public void UpdateUser(User user)
+        {
+            _context.Users.Update(user);
+        }
+
         public async Task SaveChanges()
         {
             await _context.SaveChangesAsync();

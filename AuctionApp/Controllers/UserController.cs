@@ -3,6 +3,7 @@ using AuctionApp.Data.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AuctionApp.Controllers
 {
@@ -47,8 +48,7 @@ namespace AuctionApp.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         // GET: api/User/5
-        [HttpGet]
-        [Route("{id:int}")]
+        [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserById(int id)
@@ -120,6 +120,29 @@ namespace AuctionApp.Controllers
                 return Unauthorized(ex.Message);
             }
         }
-        
+
+        [Authorize]
+        [HttpPut()]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateUser([FromBody] RegisterUserDTO dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var result = await _userService.UpdateUserAsync(userId, dto);
+
+                if (!result)
+                {
+                    return BadRequest("Failed to update user.");
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
 }

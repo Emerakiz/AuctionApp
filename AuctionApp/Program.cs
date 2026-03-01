@@ -89,7 +89,6 @@ namespace AuctionApp
 
 
 
-            
 
             app.Run();
         }

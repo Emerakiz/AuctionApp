@@ -21,6 +21,8 @@ namespace AuctionApp.Core.Services
             _mapper = mapper;
             _config = config;
         }
+
+        // Get user by ID
         public async Task<UserDTO?> GetUserByIdAsync(int id)
         {
             var user = await _userRepo.GetUserByIdAsync(id);
@@ -36,6 +38,7 @@ namespace AuctionApp.Core.Services
 
         }
 
+        // Get all users
         public async Task<List<UserDTO>> GetUsersAsync()
         {
             var users = await _userRepo.GetAllUsersAsync();
@@ -44,6 +47,7 @@ namespace AuctionApp.Core.Services
  
         }
 
+        // Login user and return JWT token  
         public async Task<string> LoginUserAsync(string username, string password)
         {
             var user = await _userRepo.GetByUserNameAsync(username);
@@ -56,10 +60,15 @@ namespace AuctionApp.Core.Services
             {
                 throw new Exception("Invalid password");    
             }
+            if (user.IsActive == false)
+            {
+                throw new Exception("User account is inactive");
+            }
 
             return GenerateToken(user);
         }
 
+        // Register user
         public async Task<bool> RegisterUserAsync(RegisterUserDTO dto)
         {
             var existingUser = await _userRepo.GetByUserNameAsync(dto.Name);
@@ -71,6 +80,27 @@ namespace AuctionApp.Core.Services
             var user =_mapper.Map<User>(dto);
 
             await _userRepo.AddUserAsync(user);
+            await _userRepo.SaveChanges();
+            return true;
+        }
+
+        // Update user information
+        public async Task<bool> UpdateUserAsync(int id, RegisterUserDTO dto)
+        {
+            var user = await _userRepo.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return false;
+            }
+
+            user.Email = dto.Email ?? user.Email;
+
+            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                user.Password = dto.Password;
+            }
+            
+            _userRepo.UpdateUser(user);
             await _userRepo.SaveChanges();
             return true;
         }
