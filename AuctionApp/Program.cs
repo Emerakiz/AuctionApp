@@ -69,7 +69,16 @@ namespace AuctionApp
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
 
-
+            // CORS configuration
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReact", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5103")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
 
@@ -83,6 +92,7 @@ namespace AuctionApp
             //app.UseExceptionHandler("/error");
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowReact");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
