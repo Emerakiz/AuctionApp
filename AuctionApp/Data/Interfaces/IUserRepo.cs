@@ -5,7 +5,8 @@ namespace AuctionApp.Data.Interfaces
     public interface IUserRepo
     {
         public Task<List<User>> GetAllUsersAsync();
-        public Task<User?> GetUserByIdAsync(int id);
+        public Task<User> GetUserByIdAsync(int id);
+        public Task <User?> GetByUserNameAsync(string username);
         public Task AddUserAsync(User user);
 
         void DeleteUser(User user);

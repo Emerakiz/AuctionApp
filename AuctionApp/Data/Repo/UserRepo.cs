@@ -20,7 +20,6 @@ namespace AuctionApp.Data.Repo
         public void DeleteUser(User user)
         {   
             _context.Users.Remove(user);
-            _context.SaveChanges();
 
         }
 
@@ -30,7 +29,12 @@ namespace AuctionApp.Data.Repo
 
         }
 
-        public async Task<User?> GetUserByIdAsync(int id)
+        public Task<User?> GetByUserNameAsync(string username)
+        {
+            return _context.Users.FirstOrDefaultAsync(u => u.Name == username);
+        }
+
+        public async Task<User> GetUserByIdAsync(int id)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
         }

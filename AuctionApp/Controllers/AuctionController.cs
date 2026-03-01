@@ -1,5 +1,6 @@
 ﻿using AuctionApp.Core.Interfaces;
 using AuctionApp.Data.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -73,14 +74,16 @@ namespace AuctionApp.Controllers
         /// <param name="auctionId">The unique identifier of the auction for which to retrieve bid history.</param>
         /// <returns>An <see cref="IActionResult"/> containing a collection of bid records for the specified auction. Returns an
         /// empty collection if no bids have been placed.</returns>
-        // GET: api/Auction/bidHistory?auctionId=5
-        [HttpGet("bidHistory")]
+        // GET: api/Auction/5/bidHistory
+        [HttpGet("{auctionId}/bidHistory")]
         public async Task<IActionResult> GetBidHistory([FromQuery] int auctionId)
         {
             var bidHistory = await _auctionService.GetBidHistoryAsync(auctionId);
             return Ok(bidHistory);
 
         }
+
+        
 
         /// <summary>
         /// Creates a new auction using the specified auction details.
@@ -89,7 +92,10 @@ namespace AuctionApp.Controllers
         /// <returns>A response with status code 201 (Created) and a location header pointing to the newly created auction
         /// resource.</returns>
         // POST: api/Auction
+        [Authorize]
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateAuction([FromBody] CreateAuctionDTO dto)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -110,12 +116,15 @@ namespace AuctionApp.Controllers
         /// cref="OkObjectResult"/> with the update result if successful; otherwise, <see cref="NotFoundResult"/> if the
         /// auction does not exist.</returns>
         // PUT: api/Auction/5
+        [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAuction(int id, [FromBody] CreateAuctionDTO dto, int auctionId)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateAuction(int id, [FromBody] CreateAuctionDTO dto)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var result = await _auctionService.UpdateAuctionAsync(dto, userId, auctionId);
+            var result = await _auctionService.UpdateAuctionAsync(id, dto, userId);
 
             if (!result)
             {
@@ -126,6 +135,29 @@ namespace AuctionApp.Controllers
 
         }
 
+        /// <summary>
+        /// Deletes the auction with the specified identifier if it exists and the user is authorized.
+        /// </summary>
+        /// <remarks>This action requires the user to be authenticated. Only the owner of the auction or
+        /// an authorized user can perform the deletion.</remarks>
+        /// <param name="id">The unique identifier of the auction to delete. Must correspond to an existing auction.</param>
+        /// <returns>An IActionResult that indicates the result of the operation. Returns Status200OK if the auction was
+        /// successfully deleted; otherwise, returns Status404NotFound if the auction does not exist.</returns>
+        [Authorize]
+        [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAuction(int id)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _auctionService.DeleteAuctionAsync(id, userId);
 
+            if (!result)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+
+        }
     }
 }

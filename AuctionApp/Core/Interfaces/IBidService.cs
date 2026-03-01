@@ -1,4 +1,5 @@
 ﻿using AuctionApp.Data.DTO;
+using AuctionApp.Data.Models;
 
 namespace AuctionApp.Core.Interfaces
 {
@@ -6,6 +7,8 @@ namespace AuctionApp.Core.Interfaces
     {
         Task<BidListItemDTO> PlaceBidAsync(PlaceBidDTO dto, int userId, int auctionId);
         Task<bool> DeleteBidAsync(int bidId, int userId);
+
+        Task<Bid> HigestBidOnAuctionAsync(int auctionId);
 
     }
 }

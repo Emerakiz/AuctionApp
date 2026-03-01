@@ -29,7 +29,7 @@ namespace AuctionApp.Data.Repo
 
         public IQueryable<Bid> QueryBids()
         {
-            return _context.Bids.AsNoTracking();
+            return _context.Bids;
         }
 
         public void RemoveBidAsync(Bid bid)

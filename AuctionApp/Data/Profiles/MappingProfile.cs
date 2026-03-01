@@ -18,11 +18,14 @@ namespace AuctionApp.Data.Profiles
             // Bids
             CreateMap<Bid, BidListItemDTO>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User.Name));
+            CreateMap<PlaceBidDTO, Bid>();
 
 
             // User
             CreateMap<User, UserDTO>();
+            CreateMap<UserDTO, User>();
             CreateMap<LoginUserDTO, User>();
+            CreateMap<RegisterUserDTO, User>();
 
 
 

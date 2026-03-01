@@ -2,14 +2,13 @@ using AuctionApp.Core.Interfaces;
 using AuctionApp.Core.Services;
 using AuctionApp.Data;
 using AuctionApp.Data.Interfaces;
-using AuctionApp.Data.Models;
 using AuctionApp.Data.Profiles;
 using AuctionApp.Data.Repo;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace AuctionApp
 {
@@ -22,18 +21,42 @@ namespace AuctionApp
 
 
             // Add services to the container.
-            builder.Services.AddAuthorization();
             builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c => // Enable XML comments
+            
+
+            builder.Services
+                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                 .AddJwtBearer(options =>
+                 {
+                     options.TokenValidationParameters = new TokenValidationParameters
+                     {
+                         ValidateIssuer = true,
+                         ValidateAudience = true,
+                         ValidateLifetime = true,
+                         ValidateIssuerSigningKey = true,
+                         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                         ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                         IssuerSigningKey = new SymmetricSecurityKey(
+                             Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+                     };
+                 });
+
+            builder.Services.AddAuthorization();
+
+            // Swagger configuration
+            builder.Services.AddSwaggerGen(c => 
             {
+                // Enable XML comments
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
+
+                
             });
 
-
+            // Connection string and DbContext configuration
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -43,6 +66,10 @@ namespace AuctionApp
             builder.Services.AddScoped<IBidRepo, BidRepo>();
             builder.Services.AddScoped<IBidService, BidService>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+
+
 
             var app = builder.Build();
 
@@ -56,10 +83,11 @@ namespace AuctionApp
             //app.UseExceptionHandler("/error");
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 
-            
+
 
             
 

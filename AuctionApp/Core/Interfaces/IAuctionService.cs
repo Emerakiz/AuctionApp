@@ -10,7 +10,9 @@ namespace AuctionApp.Core.Interfaces
         Task<List<BidListItemDTO>> GetBidHistoryAsync(int auctionId);
 
         Task<int> CreateAuctionAsync(CreateAuctionDTO dto, int userId);
-        Task<bool> UpdateAuctionAsync(CreateAuctionDTO dto, int userId, int auctionId);
+        Task<bool> UpdateAuctionAsync(int auctionId, CreateAuctionDTO dto, int userId);
+
+        Task<bool> DeleteAuctionAsync(int auctionId, int userId);
 
     }
 }

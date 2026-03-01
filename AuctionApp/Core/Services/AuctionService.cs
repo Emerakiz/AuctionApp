@@ -12,11 +12,15 @@ namespace AuctionApp.Core.Services
     public class AuctionService : IAuctionService
     {
         private readonly IAuctionRepo _repo;
+        private readonly IBidRepo _bidRepo;
         private readonly IMapper _mapper;
-        public AuctionService(IAuctionRepo repo, IMapper mapper)
+        private readonly IBidService _bidService;
+        public AuctionService(IAuctionRepo repo, IMapper mapper, IBidRepo bidRepo, IBidService bidService)
         {
             _repo = repo;
             _mapper = mapper;
+            _bidRepo = bidRepo;
+            _bidService = bidService;
         }
 
         // Create and post an Auction
@@ -40,13 +44,14 @@ namespace AuctionApp.Core.Services
         }
 
         // Retrieves a single auction by its ID, including details.
-        public Task<AuctionListItemDTO?> GetAuctionByIdAsync(int id)
+        public async Task<AuctionListItemDTO?> GetAuctionByIdAsync(int id)
         {
-            var query = _repo.QueryAuctions()
+            var query = await _repo.QueryAuctions()
                 .Where(a => a.AuctionId == id)
-                .ProjectTo<AuctionListItemDTO>(_mapper.ConfigurationProvider);
+                .ProjectTo<AuctionListItemDTO>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
 
-            return query.FirstOrDefaultAsync();
+            return query;
         }
 
         // Retrieves a list of auctions filtered by status and search criteria.
@@ -68,6 +73,8 @@ namespace AuctionApp.Core.Services
 
                 case null:
                 case "":
+                    query = query.Where(a => a.EndDate >= now);
+                    break;
                 case "all":
                     break;
 
@@ -100,21 +107,25 @@ namespace AuctionApp.Core.Services
                 dto.IsActive = dto.EndDate >= now;
             }
 
+
+
             return dtos;
         }
 
-        public Task<List<BidListItemDTO>> GetBidHistoryAsync(int auctionId)
+        // Retrieves the bid history for a specific auction, ordered by time placed.
+        public async Task<List<BidListItemDTO>> GetBidHistoryAsync(int auctionId)
         {
-            throw new NotImplementedException();
+            var bidHistory = await _bidRepo.QueryBids()
+                .Where(b => b.AuctionId == auctionId)
+                .OrderByDescending(b => b.BidTime)
+                .ProjectTo<BidListItemDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return bidHistory;
         }
 
-        /// <summary>
-        /// Updates an existing auction with the provided data from the specified user.
-        /// </summary>
-        /// <param name="dto">The data transfer object containing updated auction information.</param>
-        /// <param name="userId">The ID of the user performing the update.</param>
-        /// <returns>True if the auction was updated successfully; otherwise, false.</returns>
-        public async Task<bool> UpdateAuctionAsync(CreateAuctionDTO dto, int userId, int auctionId)
+        // Updates an existing auction's details. If there are bids placed on it, you can't change the price.
+        public async Task<bool> UpdateAuctionAsync(int auctionId, CreateAuctionDTO dto, int userId)
         {
             var auction = await _repo.QueryAuctions()
                 .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
@@ -124,21 +135,45 @@ namespace AuctionApp.Core.Services
                 return false;
             }
 
-            // Cannot update if there is any bids on the auction
-            if (auction.CurrentPrice > dto.StartingPrice)
-            {
-                return false; 
-            }
-
             // Uppdate auction properties based on DTO
             auction.Title = dto.Title;
             auction.Description = dto.Description;
-            auction.StartingPrice = dto.StartingPrice;
+
+            // If bids are placed, you can't change the price. If no bids, update the price to the new starting price.
+            if (auction.CurrentPrice <= dto.StartingPrice || auction.CurrentPrice == null)
+            {
+                auction.StartingPrice = dto.StartingPrice;
+            }
 
 
             _repo.Update(auction);
             await _repo.SaveChanges();
 
+            return true;
+        }
+
+        // Deletes auction
+        public async Task<bool> DeleteAuctionAsync(int auctionId, int userId)
+        {
+            var auction = await _repo.QueryAuctions()
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+            if (auction == null || auction.UserId != userId)
+            {
+                return false;
+            }
+
+            // Check if there are any bids placed on the auction
+            var hasBids = await _bidRepo.QueryBids()
+                .AnyAsync(b => b.AuctionId == auctionId);
+
+            // Can't delete if there are bids
+            if (hasBids)
+            {
+                return false; 
+            }
+
+            _repo.Remove(auction);
+            await _repo.SaveChanges();
             return true;
         }
     }
