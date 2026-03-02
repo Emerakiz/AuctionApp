@@ -74,7 +74,7 @@ namespace AuctionApp
             {
                 options.AddPolicy("AllowReact", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5103")
+                    policy.WithOrigins("http://localhost:5173")
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });

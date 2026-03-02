@@ -1,5 +1,6 @@
 ﻿using AuctionApp.Core.Interfaces;
 using AuctionApp.Data.Interfaces;
+using AuctionApp.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuctionApp.Core.Services
@@ -77,7 +78,7 @@ namespace AuctionApp.Core.Services
                 throw new ArgumentException("Auction not found");
             }
 
-            auction.IsActive = false;
+            auction.IsActive = !auction.IsActive;
             _auctionRepo.Update(auction);
             await _auctionRepo.SaveChanges();
             return true;
@@ -92,7 +93,7 @@ namespace AuctionApp.Core.Services
                 throw new ArgumentException("User not found");
             }
 
-            user.IsActive = false;
+            user.IsActive = !user.IsActive;
             _userRepo.UpdateUser(user);
             await _userRepo.SaveChanges();
             return true;
