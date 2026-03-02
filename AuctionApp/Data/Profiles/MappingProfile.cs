@@ -27,6 +27,7 @@ namespace AuctionApp.Data.Profiles
             CreateMap<UserDTO, User>();
             CreateMap<LoginUserDTO, User>();
             CreateMap<RegisterUserDTO, User>();
+            CreateMap<UpdateUserDTO, User>();
 
 
 

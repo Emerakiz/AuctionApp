@@ -85,7 +85,7 @@ namespace AuctionApp.Core.Services
         }
 
         // Update user information
-        public async Task<bool> UpdateUserAsync(int id, RegisterUserDTO dto)
+        public async Task<bool> UpdateUserAsync(int id, UpdateUserDTO dto)
         {
             var user = await _userRepo.GetUserByIdAsync(id);
             if (user == null)

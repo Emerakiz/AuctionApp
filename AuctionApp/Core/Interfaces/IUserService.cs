@@ -8,7 +8,7 @@ namespace AuctionApp.Core.Interfaces
         Task<string> LoginUserAsync(string username, string password);
         Task<List<UserDTO>> GetUsersAsync();
         Task<UserDTO?> GetUserByIdAsync(int id);
-        Task<bool> UpdateUserAsync(int id, RegisterUserDTO dto);
+        Task<bool> UpdateUserAsync(int id, UpdateUserDTO dto);
 
 
     }

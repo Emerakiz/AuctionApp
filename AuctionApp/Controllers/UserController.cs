@@ -125,7 +125,7 @@ namespace AuctionApp.Controllers
         [HttpPut()]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateUser([FromBody] RegisterUserDTO dto)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDTO dto)
         {
             try
             {
