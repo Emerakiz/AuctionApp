@@ -38,7 +38,7 @@ namespace AuctionApp.Controllers
             if (!string.IsNullOrWhiteSpace(status))
             {
                 var s = status.Trim().ToLower();
-                if (s != "active" && s != "closed" && s != "all")
+                if (s != "active" && s != "closed" && s != "all" && s != "admin")
                 {
                     return BadRequest("status must be: active, closed, or all");
                 }
@@ -76,7 +76,7 @@ namespace AuctionApp.Controllers
         /// empty collection if no bids have been placed.</returns>
         // GET: api/Auction/5/bidHistory
         [HttpGet("{auctionId}/bidHistory")]
-        public async Task<IActionResult> GetBidHistory([FromQuery] int auctionId)
+        public async Task<IActionResult> GetBidHistory([FromRoute] int auctionId)
         {
             var bidHistory = await _auctionService.GetBidHistoryAsync(auctionId);
             return Ok(bidHistory);

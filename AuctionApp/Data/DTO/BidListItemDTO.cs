@@ -6,7 +6,9 @@ namespace AuctionApp.Data.DTO
     {
         public int BidId { get; set; }
         public decimal Amount { get; set; }
-        public DateTime BidTime { get; set; }
-        public string Name { get; set; } = "";
+        public DateTime BidDate { get; set; }
+
+        public int UserId { get; set; }
+        public string UserName { get; set; } = "";
     }
 }

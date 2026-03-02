@@ -29,7 +29,8 @@ namespace AuctionApp.Data.Repo
 
         public IQueryable<Bid> QueryBids()
         {
-            return _context.Bids;
+            return _context.Bids
+                .Include(b => b.User);
         }
 
         public void RemoveBidAsync(Bid bid)

@@ -17,7 +17,8 @@ namespace AuctionApp.Data.Profiles
 
             // Bids
             CreateMap<Bid, BidListItemDTO>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User.Name));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name))
+                .ForMember(dest => dest.BidDate, opt => opt.MapFrom(src => src.BidTime));
             CreateMap<PlaceBidDTO, Bid>();
 
 

@@ -57,25 +57,30 @@ namespace AuctionApp.Core.Services
         // Retrieves a list of auctions filtered by status and search criteria.
         public async Task<List<AuctionListItemDTO>> GetAuctionsAsync(string? status, string? search)
         {
-            var query = _repo.QueryAuctions().Where(a => a.IsActive);
+            var query = _repo.QueryAuctions().AsQueryable();
             var now = DateTime.UtcNow;
 
             // Status filter
             switch (status?.ToLower())
             {
                 case "active":
-                    query = query.Where(a => a.StartDate <= now && a.EndDate >= now);
+                    query = query.Where(a => a.StartDate <= now && a.EndDate >= now && a.IsActive);
                     break;
 
                 case "closed":
-                    query = query.Where(a => a.EndDate < now);
+                    query = query.Where(a => a.EndDate < now && a.IsActive);
                     break;
 
                 case null:
                 case "":
-                    query = query.Where(a => a.EndDate >= now);
+                    query = query.Where(a => a.EndDate >= now && a.IsActive);
                     break;
+
                 case "all":
+                    query = query.Where(a => a.IsActive);
+                    break;
+
+                case "admin":
                     break;
 
                 default:

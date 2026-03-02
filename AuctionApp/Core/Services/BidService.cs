@@ -122,7 +122,7 @@ namespace AuctionApp.Core.Services
             // Return the newly placed bid as a DTO
             var result = _mapper.Map<BidListItemDTO>(bid);
             var userName = await _userRepo.GetUserByIdAsync(userId);
-            result.Name = userName?.Name;
+            result.UserName = userName?.Name;
 
             return result;
 

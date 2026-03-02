@@ -29,7 +29,7 @@ namespace AuctionApp.Controllers
         /// successfully deleted; returns Forbid if the user lacks administrative privileges; otherwise, returns
         /// BadRequest with an error message.</returns>
         // DELETE: api/Admin/auction/5
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("auction/{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -39,11 +39,6 @@ namespace AuctionApp.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-                if (!await _adminService.IsUserAdminAsync(userId))
-                {
-                    return Forbid("You do not have permission to perform this action.");
-                }
 
                 await _adminService.DeleteAuctionAsync(id, userId);
                 return NoContent();
@@ -65,7 +60,7 @@ namespace AuctionApp.Controllers
         /// <returns>An IActionResult that indicates the result of the delete operation. Returns NoContent if the user is
         /// successfully deleted; otherwise, returns a BadRequest with an error message.</returns>
         // DELETE: api/Admin/user/5
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("user/{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -75,10 +70,6 @@ namespace AuctionApp.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                if (!await _adminService.IsUserAdminAsync(userId))
-                {
-                    return Forbid("You do not have permission to perform this action.");
-                }
 
                 await _adminService.DeleteUserAsync(id, userId);
                 return NoContent();
@@ -89,7 +80,7 @@ namespace AuctionApp.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut("auction/{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -99,10 +90,6 @@ namespace AuctionApp.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                if (!await _adminService.IsUserAdminAsync(userId))
-                {
-                    return Forbid("You do not have permission to perform this action.");
-                }
 
                 await _adminService.DisableAuctionAsync(id, userId);
                 return NoContent();
@@ -114,7 +101,7 @@ namespace AuctionApp.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut("user/{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -124,10 +111,6 @@ namespace AuctionApp.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                if (!await _adminService.IsUserAdminAsync(userId))
-                {
-                    return Forbid("You do not have permission to perform this action.");
-                }
 
                 await _adminService.DisableUserAsync(id, userId);
                 return NoContent();

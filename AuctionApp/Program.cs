@@ -72,11 +72,11 @@ namespace AuctionApp
             // CORS configuration
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowReact", policy =>
+                options.AddPolicy("AllowAll", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173")
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
                 });
             });
 
@@ -92,12 +92,12 @@ namespace AuctionApp
             //app.UseExceptionHandler("/error");
             app.UseHttpsRedirection();
 
-            app.UseCors("AllowReact");
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 
-
+            
 
 
             app.Run();
